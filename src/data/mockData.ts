@@ -91,7 +91,16 @@ export const mockBookings = [
 ]
 
 export const loginUser = async (username: string, password: string) => {
-  const user = mockUsers.find((u) => u.username === username && u.password === password)
+  let localUsers: any[] = []
+  try {
+    const localUsersStr = localStorage.getItem('localUsers')
+    if (localUsersStr) {
+      localUsers = JSON.parse(localUsersStr)
+    }
+  } catch {}
+
+  const allUsers = [...mockUsers, ...localUsers]
+  const user = allUsers.find((u) => u.username === username && u.password === password)
   if (!user) {
     throw new Error('Login failed. Please check your credentials.')
   }
@@ -102,10 +111,27 @@ export const loginUser = async (username: string, password: string) => {
 }
 
 export const registerUser = async (username: string, password: string, email: string) => {
-  const existingUser = mockUsers.find((u) => u.username === username || u.email === email)
+  let localUsers: any[] = []
+  try {
+    const localUsersStr = localStorage.getItem('localUsers')
+    if (localUsersStr) {
+      localUsers = JSON.parse(localUsersStr)
+    }
+  } catch {}
+
+  const allUsers = [...mockUsers, ...localUsers]
+  const existingUser = allUsers.find((u) => u.username === username || u.email === email)
   if (existingUser) {
     throw new Error('User already exists')
   }
+  const newUser = {
+    id: Date.now(),
+    username,
+    password,
+    email,
+  }
+  localUsers.push(newUser)
+  localStorage.setItem('localUsers', JSON.stringify(localUsers))
   return 'Registration successful'
 }
 
